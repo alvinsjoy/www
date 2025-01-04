@@ -5,7 +5,7 @@ import { CameraFeed } from '@/components/camera-feed';
 import { DetectionOverlay } from '@/components/detection-overlay';
 import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { LuCircleAlert } from 'react-icons/lu';
 
 export default function Home() {
   const [detections, setDetections] = useState<DetectionResult[]>([]);
@@ -13,17 +13,14 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [processingTime, setProcessingTime] = useState<number>(0);
 
-  const processFrame = useCallback(async (imageData: string) => {
+  const processFrame = useCallback(async (formData: FormData) => {
     try {
       setIsProcessing(true);
       setError(null);
 
       const response = await fetch('localhost:8000/detect', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image: imageData }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -42,14 +39,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-center text-3xl font-bold">
+    <main className="container mx-auto items-center px-4 py-8">
+      <h1 className="mb-8 text-center text-3xl font-bold text-foreground">
         Traffic Sign Detection
       </h1>
 
       {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="destructive" className="mx-auto mb-4 max-w-2xl">
+          <LuCircleAlert className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}

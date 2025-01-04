@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { DetectionResult } from '../types/detection';
+import type { DetectionResult } from '@/types/detection';
 
 interface DetectionOverlayProps {
   detections: DetectionResult[];
@@ -17,7 +17,9 @@ export function DetectionOverlay({
   return (
     <div className="mt-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Detected Signs</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Detected Signs
+        </h2>
         {processingTime && (
           <Badge variant="secondary">{processingTime.toFixed(2)}ms</Badge>
         )}
@@ -28,7 +30,9 @@ export function DetectionOverlay({
           <Card key={index} className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-medium">{detection.class_name}</h3>
+                <h3 className="font-medium text-foreground">
+                  {detection.class_name}
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Confidence: {(detection.confidence * 100).toFixed(1)}%
                 </p>
