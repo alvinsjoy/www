@@ -67,7 +67,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
           mirrored={false}
         />
         <div className="absolute bottom-4 right-4">
-          <LuCamera className="h-6 w-6 text-foreground drop-shadow-lg" />
+          <LuCamera className="h-6 w-6 text-muted-foreground drop-shadow-lg" />
         </div>
       </Card>
     </div>
