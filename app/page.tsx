@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { CameraFeed } from '@/components/camera-feed';
 import { DetectionOverlay } from '@/components/detection-overlay';
+import ThemeSwitch from '@/components/theme-switch';
 import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
@@ -40,9 +41,14 @@ export default function Home() {
 
   return (
     <main className="container mx-auto items-center px-4 py-8">
-      <h1 className="mb-8 text-center text-3xl font-bold text-foreground">
-        Traffic Sign Detection
-      </h1>
+      <div className="relative mb-8">
+        <h1 className="text-center text-3xl font-bold text-foreground">
+          Traffic Sign Detection
+        </h1>
+        <div className="absolute right-0 top-0">
+          <ThemeSwitch />
+        </div>
+      </div>
 
       {error && (
         <Alert variant="destructive" className="mx-auto mb-4 max-w-2xl">
