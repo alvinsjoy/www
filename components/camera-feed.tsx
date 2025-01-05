@@ -42,7 +42,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
   }, [capture]);
 
   const handleUserMediaError = useCallback((error: string | DOMException) => {
-    console.error('Camera error:', error);
+    console.log('Camera error:', error);
     setError(
       "Camera access denied. Please ensure you've granted camera permissions.",
     );
