@@ -38,7 +38,7 @@ export default function Home() {
       setIsProcessing(true);
       setError(null);
 
-      const response = await fetch('localhost:8000/detect', {
+      const response = await fetch('http://localhost:8000/detect', {
         method: 'POST',
         body: formData,
       });
@@ -66,10 +66,10 @@ export default function Home() {
   return (
     <main className="container mx-auto items-center px-4 py-8">
       <div className="relative mb-8">
-        <h1 className="text-center text-3xl font-bold text-foreground">
+        <h1 className="text-foreground text-center text-3xl font-bold">
           Traffic Sign Detection
         </h1>
-        <div className="absolute right-0 top-0">
+        <div className="absolute top-0 right-0">
           <ThemeSwitch />
         </div>
       </div>
