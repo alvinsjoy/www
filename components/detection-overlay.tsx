@@ -58,7 +58,7 @@ export function DetectionOverlay({
                   Confidence: {(detection.confidence * 100).toFixed(1)}%
                 </p>
               </div>
-              <Badge>{detection.class_id}</Badge>
+              <Badge>Class: {detection.class_id}</Badge>
             </div>
           </Card>
         ))}
