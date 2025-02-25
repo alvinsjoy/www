@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useAudioPref } from '@/hooks/use-audio-pref';
 import { CameraFeed } from '@/components/camera-feed';
 import { DetectionOverlay } from '@/components/detection-overlay';
 import ThemeSwitch from '@/components/theme-switch';
+import AudioToggle from '@/components/audio-toggle';
 import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
@@ -32,6 +34,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [processingTime, setProcessingTime] = useState<number>(0);
   const previousDetections = useRef<DetectionResult[]>([]);
+  const [audioEnabled] = useAudioPref();
 
   const processFrame = useCallback(async (formData: FormData) => {
     try {
@@ -67,10 +70,11 @@ export default function Home() {
     <main className="container mx-auto items-center px-4 py-8">
       <div className="relative mb-8">
         <h1 className="text-foreground text-center text-3xl font-bold">
-          Traffic Sign Detection
+          Traffic Sign Recognition
         </h1>
-        <div className="absolute top-0 right-0">
+        <div className="absolute top-0 flex w-full justify-between">
           <ThemeSwitch />
+          <AudioToggle />
         </div>
       </div>
 
@@ -85,6 +89,7 @@ export default function Home() {
       <DetectionOverlay
         detections={detections}
         processingTime={processingTime}
+        audioEnabled={audioEnabled}
       />
     </main>
   );
