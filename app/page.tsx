@@ -21,10 +21,7 @@ function areDetectionsEqual(
 
   return sortedPrev.every((detection, index) => {
     const currDetection = sortedCurr[index];
-    return (
-      detection.class_id === currDetection.class_id &&
-      Math.abs(detection.confidence - currDetection.confidence) < 0.1
-    );
+    return detection.class_id === currDetection.class_id;
   });
 }
 
