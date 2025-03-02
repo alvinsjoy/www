@@ -1,10 +1,5 @@
 {
   "env": {
     "PYTHONUNBUFFERED": "1"
-  },
-  "functions": {
-    "app/api/**/*.py": {
-      "runtime": "python3.12"
-    }
   }
 }
