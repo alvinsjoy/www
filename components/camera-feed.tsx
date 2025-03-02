@@ -29,7 +29,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
         const blob = await base64Response.blob();
 
         const formData = new FormData();
-        formData.append('image', blob, 'image.jpg');
+        formData.append('file', blob, 'image.jpg');
 
         onFrame(formData);
       }
@@ -66,8 +66,8 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
           className="h-auto w-full"
           mirrored={false}
         />
-        <div className="absolute bottom-4 right-4">
-          <LuCamera className="h-6 w-6 text-muted-foreground drop-shadow-lg" />
+        <div className="absolute right-4 bottom-4">
+          <LuCamera className="text-muted-foreground h-6 w-6 drop-shadow-lg" />
         </div>
       </Card>
     </div>
