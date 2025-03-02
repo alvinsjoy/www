@@ -1,5 +1,8 @@
 import numpy as np
+<<<<<<< HEAD
 import torch
+=======
+>>>>>>> 16f3a0639cc303d1806746a048ad1e89ea3339af
 from ultralytics import YOLO
 
 model=YOLO("best.pt")
