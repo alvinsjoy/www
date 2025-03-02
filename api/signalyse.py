@@ -2,8 +2,6 @@ import fastapi
 from fastapi import APIRouter,UploadFile
 from PIL import Image
 import io
-from fastapi import APIRouter
-import base64
 from PIL import Image
 import io
 from controllers.signalyse import detect_object
