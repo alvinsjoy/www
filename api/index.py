@@ -27,6 +27,3 @@ async def detect_signs(file: UploadFile = File(...)):
         return {"results": selected_signs, "processing_time": processing_time}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-from mangum import Mangum
-handler = Mangum(app)
