@@ -1,5 +1,8 @@
 {
   "env": {
     "PYTHONUNBUFFERED": "1"
+  },
+  "functions": {
+    "app/api/**/*.py": {}
   }
 }
