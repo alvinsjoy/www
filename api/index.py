@@ -27,6 +27,9 @@ class DetectionResponse(BaseModel):
     results: List[DetectionResult]
     processing_time: float
 
+@app.get("/api/hello")
+def hello():
+    return {"message": "Hello from FastAPI"}
 # Handle both paths - the /api prefix is added by Vercel but not needed locally
 @app.post("/detect")
 @app.post("/api/detect")
