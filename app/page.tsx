@@ -38,7 +38,13 @@ export default function Home() {
       setIsProcessing(true);
       setError(null);
 
-      const response = await fetch('http://localhost:8000/detect', {
+      // Environment-aware API URL
+      const apiUrl =
+        process.env.NODE_ENV === 'development'
+          ? 'http://localhost:8000/detect' // Local development
+          : '/api/detect'; // Production on Vercel
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
