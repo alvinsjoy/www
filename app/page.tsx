@@ -9,6 +9,7 @@ import AudioToggle from '@/components/audio-toggle';
 import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
+import { motion } from 'motion/react';
 
 function areDetectionsEqual(
   prev: DetectionResult[],
@@ -63,30 +64,60 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="container mx-auto items-center px-4 py-8">
-      <div className="relative mb-8">
-        <h1 className="text-foreground text-center text-3xl font-bold">
-          Traffic Sign Recognition
+    <main className="container mx-auto flex min-h-screen flex-col items-center px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="relative mb-8 w-full"
+      >
+        <h1 className="text-center text-4xl font-bold tracking-tight">
+          <span className="from-primary to-accent-foreground bg-gradient-to-r bg-clip-text text-transparent">
+            Traffic Sign Recognition
+          </span>
         </h1>
         <div className="absolute top-0 flex w-full justify-between">
           <ThemeSwitch />
           <AudioToggle />
         </div>
-      </div>
+      </motion.div>
 
       {error && (
-        <Alert variant="destructive" className="mx-auto mb-4 max-w-2xl">
-          <LuCircleAlert className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.2 }}
+          className="w-full max-w-2xl"
+        >
+          <Alert variant="destructive" className="mx-auto mb-6">
+            <LuCircleAlert className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </motion.div>
       )}
 
-      <CameraFeed onFrame={processFrame} isProcessing={isProcessing} />
-      <DetectionOverlay
-        detections={detections}
-        processingTime={processingTime}
-        audioEnabled={audioEnabled}
-      />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="w-full max-w-4xl"
+      >
+        <CameraFeed onFrame={processFrame} isProcessing={isProcessing} />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="w-full max-w-4xl"
+      >
+        <DetectionOverlay
+          detections={detections}
+          processingTime={processingTime}
+          audioEnabled={audioEnabled}
+        />
+      </motion.div>
     </main>
   );
 }
