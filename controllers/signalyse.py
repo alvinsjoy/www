@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from ultralytics import YOLO
 
 model=YOLO("best.pt")
