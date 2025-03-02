@@ -8,16 +8,14 @@ import os
 
 app = FastAPI()
 
-# Add CORS only for local development (not on Vercel)
-is_vercel = os.environ.get("VERCEL", "0") == "1"
-if not is_vercel:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins in development and production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Detection models that match TypeScript interfaces
 class DetectionResult(BaseModel):
