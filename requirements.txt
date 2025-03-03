@@ -2,7 +2,6 @@ fastapi
 uvicorn
 numpy
 pillow
-io
 ulralytics
 
 
