@@ -3,6 +3,7 @@ uvicorn==0.34.0
 numpy==2.2.3
 pillow==11.1.0
 ultralytics
+python-multipart
 
 
 
