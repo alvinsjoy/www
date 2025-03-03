@@ -10,12 +10,15 @@ import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
 import { motion } from 'motion/react';
+import { detectTrafficSigns } from '@/lib/actions/detect';
 
 function areDetectionsEqual(
   prev: DetectionResult[],
-  curr: DetectionResult[],
+  curr: DetectionResult[] | undefined,
 ): boolean {
+  if (!prev || !curr) return prev === curr;
   if (prev.length !== curr.length) return false;
+  if (prev.length === 0) return true;
 
   const sortedPrev = [...prev].sort((a, b) => a.class_id - b.class_id);
   const sortedCurr = [...curr].sort((a, b) => a.class_id - b.class_id);
@@ -38,21 +41,17 @@ export default function Home() {
     try {
       setIsProcessing(true);
       setError(null);
-      const response = await fetch('/api/detect', {
-        method: 'POST',
-        body: formData,
-      });
 
-      if (!response.ok) {
-        throw new Error('Detection failed');
+      const result = await detectTrafficSigns(formData);
+      if (!result.success) {
+        throw new Error(result.error);
       }
+      const data = result.data;
 
-      const data = await response.json();
-
+      setProcessingTime(data.processing_time || 0);
       // Only update if the detections are different
       if (!areDetectionsEqual(previousDetections.current, data.results)) {
         setDetections(data.results);
-        setProcessingTime(data.processing_time);
         previousDetections.current = data.results;
       }
     } catch (err) {

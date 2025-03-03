@@ -76,7 +76,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
           <div className="relative h-full rounded-2xl border p-2">
             <GlowingEffect
               blur={0}
-              borderWidth={2}
+              borderWidth={2.5}
               spread={60}
               glow={true}
               disabled={false}
