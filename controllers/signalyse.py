@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import torch
 from ultralytics import YOLO
@@ -17,8 +16,6 @@ CLASS_NAMES = [
 ]
 
 def detect_object(image):
-    
-    start_time = time.time() 
 
     image_np = np.array(image)  
     results = model(image_np)[0]  
@@ -36,7 +33,7 @@ def detect_object(image):
             "confidence": confidence
         })
 
-    processing_time = round(time.time() - start_time, 4)  
+    processing_time = round(results.speed['inference'], 2)  
 
     return {
         "results": detected_objects,

@@ -5,7 +5,7 @@ import io
 from controllers.signalyse import detect_object
 
 router=fastapi.APIRouter()
-@router.post("/detect/")
+@router.post("/detect")
 async def Img_Convert(file: UploadFile):
     try:
       image_data = await file.read()
