@@ -63,19 +63,19 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="container mx-auto flex min-h-screen flex-col items-center px-4 py-8">
+    <main className="container mx-auto flex min-h-screen flex-col items-center px-3 py-4 md:px-4 md:py-8">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="relative mb-8 w-full"
+        className="relative mb-6 w-full md:mb-8"
       >
-        <h1 className="text-center text-4xl font-bold tracking-tight">
+        <h1 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
           <span className="from-primary to-accent-foreground bg-gradient-to-r bg-clip-text text-transparent">
             Traffic Sign Recognition
           </span>
         </h1>
-        <div className="absolute top-0 flex w-full justify-between">
+        <div className="absolute top-1 flex w-full justify-between md:top-0">
           <ThemeSwitch />
           <AudioToggle />
         </div>
@@ -89,7 +89,7 @@ export default function Home() {
           transition={{ duration: 0.2 }}
           className="w-full max-w-2xl"
         >
-          <Alert variant="destructive" className="mx-auto mb-6">
+          <Alert variant="destructive" className="mx-auto mb-4 md:mb-6">
             <LuCircleAlert className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>

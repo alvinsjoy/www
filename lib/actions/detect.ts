@@ -3,7 +3,7 @@ export async function detectTrafficSigns(formData: FormData) {
   try {
     console.log('Sending request to detection API...');
 
-    const response = await fetch('https://signalyze.onrender.com/detect/', {
+    const response = await fetch('http://localhost:8000/detect', {
       method: 'POST',
       body: formData,
     });
