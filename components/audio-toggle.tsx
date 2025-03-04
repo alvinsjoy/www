@@ -11,10 +11,14 @@ export default function AudioToggle() {
     <Button
       variant="ghost"
       size="icon"
-      className="text-muted-foreground hover:text-foreground rounded-full"
+      className="text-muted-foreground hover:text-foreground h-8 w-8 rounded-full md:h-10 md:w-10"
       onClick={() => setAudioPreference(!isEnabled)}
     >
-      {isEnabled ? <FaVolumeHigh /> : <FaVolumeXmark />}
+      {isEnabled ? (
+        <FaVolumeHigh className="h-4 w-4 md:h-5 md:w-5" />
+      ) : (
+        <FaVolumeXmark className="h-4 w-4 md:h-5 md:w-5" />
+      )}
       <span className="sr-only">Toggle audio feedback</span>
     </Button>
   );

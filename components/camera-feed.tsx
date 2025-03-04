@@ -19,7 +19,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
   const videoConstraints = {
     facingMode: 'environment',
     width: 640,
-    height: 480,
+    height: 640,
   };
 
   const capture = useCallback(async () => {
@@ -50,7 +50,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-2xl">
       <AnimatePresence>
         {error && (
           <motion.div
@@ -59,8 +59,11 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
-            <Alert variant="destructive" className="mb-4">
-              <LuCircleAlert className="h-4 w-4" />
+            <Alert
+              variant="destructive"
+              className="mb-3 text-sm md:mb-4 md:text-base"
+            >
+              <LuCircleAlert className="h-3 w-3 md:h-4 md:w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </motion.div>
@@ -72,8 +75,8 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="relative min-h-[20rem]">
-          <div className="relative h-full rounded-2xl border p-2">
+        <div className="relative min-h-[15rem] md:min-h-[20rem]">
+          <div className="relative h-full rounded-lg border p-1 md:rounded-2xl md:p-2">
             <GlowingEffect
               blur={0}
               borderWidth={2.5}
@@ -85,28 +88,28 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
               movementDuration={1.5}
             />
 
-            <div className="border-0.75 bg-background relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-1">
+            <div className="border-0.5 md:border-0.75 bg-background relative flex h-full flex-col justify-between overflow-hidden rounded-md p-0.5 md:rounded-xl md:p-1">
               <Webcam
                 audio={false}
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
                 videoConstraints={videoConstraints}
                 onUserMediaError={handleUserMediaError}
-                className="h-auto w-full rounded-lg"
+                className="h-auto w-full rounded-md md:rounded-lg"
                 mirrored={false}
               />
 
-              <div className="bg-background/80 absolute right-4 bottom-4 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur">
+              <div className="bg-background/80 absolute right-2 bottom-2 flex items-center gap-1 rounded-full px-2 py-1 backdrop-blur md:right-4 md:bottom-4 md:gap-2 md:px-3 md:py-1.5">
                 <div
-                  className={`h-2 w-2 rounded-full ${isProcessing ? 'bg-primary animate-pulse' : 'bg-green-500'}`}
+                  className={`h-1.5 w-1.5 rounded-full md:h-2 md:w-2 ${isProcessing ? 'bg-primary animate-pulse' : 'bg-green-500'}`}
                 ></div>
-                <LuCamera className="h-4 w-4" />
+                <LuCamera className="h-3 w-3 md:h-4 md:w-4" />
               </div>
 
               {isProcessing && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <LuScan className="text-primary/80 h-8 w-8 animate-pulse" />
+                    <LuScan className="text-primary/80 h-6 w-6 animate-pulse md:h-8 md:w-8" />
                   </div>
                 </div>
               )}

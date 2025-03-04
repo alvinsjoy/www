@@ -37,22 +37,22 @@ export function DetectionOverlay({
   }, [detections, audioEnabled]);
 
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-4 space-y-3 md:mt-6 md:space-y-4">
       <motion.div
         className="flex items-center justify-between"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <h2 className="text-2xl font-semibold">Detected Signs</h2>
+        <h2 className="text-xl font-semibold md:text-2xl">Detected Signs</h2>
         {processingTime && (
-          <Badge variant="secondary" className="text-sm font-medium">
+          <Badge variant="secondary" className="text-xs font-medium md:text-sm">
             {processingTime.toFixed(2)}ms
           </Badge>
         )}
       </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
         <AnimatePresence mode="sync">
           {detections.map((detection, index) => (
             <motion.div
@@ -65,23 +65,25 @@ export function DetectionOverlay({
               }}
               layout="position"
             >
-              <Card className="border-l-primary overflow-hidden border-l-4 p-4 shadow-sm transition-all hover:shadow-md">
+              <Card className="border-l-primary overflow-hidden border-l-4 p-3 shadow-sm transition-all hover:shadow-md md:p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-medium">{detection.class_name}</h3>
+                    <h3 className="text-sm font-medium md:text-base">
+                      {detection.class_name}
+                    </h3>
                     <div className="mt-1 flex items-center">
-                      <div className="bg-secondary h-2 w-20 overflow-hidden rounded-full">
+                      <div className="bg-secondary h-1.5 w-16 overflow-hidden rounded-full md:h-2 md:w-20">
                         <div
                           className="bg-primary h-full"
                           style={{ width: `${detection.confidence * 100}%` }}
                         />
                       </div>
-                      <p className="text-muted-foreground ml-2 text-sm">
+                      <p className="text-muted-foreground ml-2 text-xs md:text-sm">
                         {(detection.confidence * 100).toFixed(1)}%
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-secondary/50">
+                  <Badge variant="outline" className="bg-secondary/50 text-xs">
                     ID: {detection.class_id}
                   </Badge>
                 </div>
@@ -92,12 +94,14 @@ export function DetectionOverlay({
 
         {detections.length === 0 && (
           <motion.div
-            className="border-muted col-span-2 rounded-lg border border-dashed p-8 text-center"
+            className="border-muted col-span-1 rounded-lg border border-dashed p-6 text-center sm:col-span-2 md:p-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            <p className="text-muted-foreground">No traffic signs detected</p>
+            <p className="text-muted-foreground text-sm md:text-base">
+              No traffic signs detected
+            </p>
           </motion.div>
         )}
       </div>
