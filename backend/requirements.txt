@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+numpy
+pillow
+ultralytics
+python-multipart
+
+
+
+
+
