@@ -19,7 +19,7 @@ export function CameraFeed({ onFrame, isProcessing }: CameraFeedProps) {
   const videoConstraints = {
     facingMode: 'environment',
     width: 640,
-    height: 640,
+    height: 480,
   };
 
   const capture = useCallback(async () => {
