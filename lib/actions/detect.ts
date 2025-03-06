@@ -3,7 +3,7 @@ export async function detectTrafficSigns(formData: FormData) {
   try {
     console.log('Sending request to detection API...');
 
-    const response = await fetch('http://localhost:8000/detect', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/detect`, {
       method: 'POST',
       body: formData,
     });
