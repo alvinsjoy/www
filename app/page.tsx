@@ -64,16 +64,17 @@ export default function Home() {
 
   return (
     <main className="container mx-auto flex min-h-screen flex-col items-center px-3 py-4 md:px-4 md:py-8">
+      <div className="pointer-events-none absolute top-0 left-1/4 h-[400px] w-1/2 bg-gradient-to-b from-purple-600/30 via-fuchsia-500/15 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute top-0 right-[10%] h-[350px] w-[400px] bg-gradient-to-b from-orange-500/30 via-pink-500/15 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute top-0 left-[10%] h-[350px] w-[400px] bg-gradient-to-b from-blue-600/30 via-indigo-500/15 to-transparent blur-3xl" />
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="relative mb-6 w-full md:mb-8"
       >
-        <h1 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
-          <span className="from-primary to-accent-foreground bg-gradient-to-r bg-clip-text text-transparent">
-            Traffic Sign Recognition
-          </span>
+        <h1 className="from-primary to-accent-foreground bg-gradient-to-r bg-clip-text text-center text-4xl font-bold text-transparent">
+          Traffic Sign Recognition
         </h1>
         <div className="absolute top-1 flex w-full justify-between md:top-0">
           <ThemeSwitch />
