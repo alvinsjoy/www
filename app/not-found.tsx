@@ -11,6 +11,9 @@ import { motion } from 'motion/react';
 export default function NotFound() {
   return (
     <main className="container mx-auto flex min-h-[80vh] flex-col items-center justify-center px-3 py-6 md:px-4 md:py-8">
+      <div className="pointer-events-none absolute top-0 left-1/4 h-[400px] w-1/2 bg-gradient-to-b from-purple-600/30 via-fuchsia-500/15 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute top-0 right-[10%] h-[350px] w-[400px] bg-gradient-to-b from-orange-500/30 via-pink-500/15 to-transparent blur-3xl" />
+      <div className="pointer-events-none absolute top-0 left-[10%] h-[350px] w-[400px] bg-gradient-to-b from-blue-600/30 via-indigo-500/15 to-transparent blur-3xl" />
       <div className="absolute top-2 flex w-full max-w-7xl justify-between px-3 md:top-4 md:px-4">
         <ThemeSwitch />
         <AudioToggle />
