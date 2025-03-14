@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { DetectionResult } from '@/types/detection';
 import { motion, AnimatePresence } from 'motion/react';
+import { TextShimmer } from '@/components/ui/text-shimmer';
 
 interface DetectionOverlayProps {
   detections: DetectionResult[];
@@ -99,9 +100,7 @@ export function DetectionOverlay({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            <p className="text-muted-foreground text-sm md:text-base">
-              No traffic signs detected
-            </p>
+            <TextShimmer as="p">No traffic signs detected</TextShimmer>
           </motion.div>
         )}
       </div>
