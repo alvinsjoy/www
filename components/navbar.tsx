@@ -2,16 +2,16 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import ThemeSwitch from './theme-switch';
-import AudioToggle from './audio-toggle';
-import { Button } from './ui/button';
+import ThemeSwitch from '@/components/theme-switch';
+import AudioToggle from '@/components/audio-toggle';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import {
   LuChevronDown,
   LuLayoutDashboard,
