@@ -17,7 +17,6 @@ import {
   LuLayoutDashboard,
   LuLogIn,
   LuLogOut,
-  LuUser,
 } from 'react-icons/lu';
 
 export default function NavBar() {
@@ -70,12 +69,6 @@ export default function NavBar() {
                 <Link href="/signin" className="flex items-center gap-1">
                   <LuLogIn className="h-4 w-4" />
                   <span>Sign In</span>
-                </Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/signup" className="flex items-center gap-1">
-                  <LuUser className="h-4 w-4" />
-                  <span>Sign Up</span>
                 </Link>
               </Button>
             </div>
