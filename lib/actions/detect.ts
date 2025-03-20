@@ -1,4 +1,7 @@
 'use server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
 export async function detectTrafficSigns(formData: FormData) {
   try {
     console.log('Sending request to detection API...');
@@ -24,6 +27,23 @@ export async function detectTrafficSigns(formData: FormData) {
       console.error('Invalid response structure:', data);
       throw new Error('Unexpected API response format');
     }
+
+    // Store detections for authenticated users
+    const session = await auth();
+    if (session && session.user && session.user.id && data.results.length > 0) {
+      for (const detection of data.results) {
+        await prisma.detection.create({
+          data: {
+            classId: detection.class_id,
+            className: detection.class_name,
+            confidence: detection.confidence,
+            userId: session.user.id,
+          },
+        });
+      }
+      console.log('Detections stored in database for user:', session.user.id);
+    }
+
     return { success: true, data };
   } catch (error) {
     console.error('Detection error:', error);
