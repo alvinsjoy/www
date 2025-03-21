@@ -2,14 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-interface StatResult {
-  classId: number;
-  className: string;
-  _sum: {
-    count: number | null;
-  };
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(req: NextRequest) {
   try {
@@ -23,30 +15,83 @@ export async function GET(req: NextRequest) {
     // Get user ID from session
     const userId = session.user.id;
 
-    // Get detection statistics for the user
-    const stats = await prisma.detection.groupBy({
-      by: ['classId', 'className'],
-      _sum: {
-        count: true,
-      },
+    const detections = await prisma.detection.findMany({
       where: {
         userId,
       },
+      select: {
+        classId: true,
+        className: true,
+        count: true,
+        createdAt: true,
+      },
       orderBy: {
-        _sum: {
-          count: 'desc',
-        },
+        createdAt: 'asc',
       },
     });
 
-    // Transform the data for the frontend
-    const formattedStats = stats.map((stat: StatResult) => ({
-      classId: stat.classId,
-      className: stat.className,
-      count: stat._sum.count || 0,
-    }));
+    // Create a mapping of classId to className
+    const classMap: Record<number, string> = {};
+    detections.forEach((d) => {
+      classMap[d.classId] = d.className;
+    });
 
-    return NextResponse.json(formattedStats);
+    const monthlyStats: Record<string, Record<number, number>> = {};
+    const signClassIds = new Set<number>();
+
+    detections.forEach((detection) => {
+      const date = detection.createdAt;
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const classId = detection.classId;
+
+      signClassIds.add(classId);
+
+      if (!monthlyStats[month]) {
+        monthlyStats[month] = {};
+      }
+
+      if (!monthlyStats[month][classId]) {
+        monthlyStats[month][classId] = 0;
+      }
+
+      monthlyStats[month][classId] += detection.count;
+    });
+
+    // Format data for the chart - using class IDs as keys
+    const chartData = Object.entries(monthlyStats).map(([month, stats]) => {
+      const monthData: Record<string, string | number> = { month };
+
+      // Add each sign class as a property using classId
+      signClassIds.forEach((classId) => {
+        // Use classId as the key
+        monthData[`class-${classId}`] = stats[classId] || 0;
+      });
+
+      return monthData;
+    });
+
+    const totalStats = Array.from(signClassIds)
+      .map((classId) => {
+        const count = detections
+          .filter((d) => d.classId === classId)
+          .reduce((sum, d) => sum + d.count, 0);
+
+        return {
+          classId,
+          className: classMap[classId],
+          count,
+        };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    const classIdsArray = Array.from(signClassIds);
+
+    return NextResponse.json({
+      chartData,
+      totalStats,
+      classIds: classIdsArray,
+      classMap,
+    });
   } catch (error) {
     console.error('Stats error:', error);
     return NextResponse.json(
