@@ -2,6 +2,7 @@
 
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import ThemeSwitch from '@/components/theme-switch';
 import AudioToggle from '@/components/audio-toggle';
 import { Button } from '@/components/ui/button';
@@ -17,10 +18,12 @@ import {
   LuLayoutDashboard,
   LuLogIn,
   LuLogOut,
+  LuHouse,
 } from 'react-icons/lu';
 
 export default function NavBar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   return (
     <div className="relative mb-6 w-full md:mb-8">
@@ -48,10 +51,17 @@ export default function NavBar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard" className="flex items-center gap-2">
-                    <LuLayoutDashboard className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
+                  {pathname === '/dashboard' ? (
+                    <Link href="/" className="flex items-center gap-2">
+                      <LuHouse className="h-4 w-4" />
+                      <span>Home</span>
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <LuLayoutDashboard className="h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
