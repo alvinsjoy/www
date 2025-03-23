@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { toast } from 'sonner';
 
 export default function SignIn() {
   const router = useRouter();
@@ -38,31 +39,40 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
 
-    try {
-      console.log('Attempting sign in...');
-      const result = await signIn('credentials', {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
+    toast.promise(
+      (async () => {
+        try {
+          const result = await signIn('credentials', {
+            redirect: false,
+            email: data.email,
+            password: data.password,
+          });
 
-      console.log('Sign in result:', result);
-
-      if (result?.error) {
-        setError('Invalid email or password');
-        console.error('Sign in error from result:', result.error);
-      } else if (result?.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        setError('An unexpected error occurred');
-      }
-    } catch (err) {
-      console.error('Sign in exception:', err);
-      setError('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+          if (result?.error) {
+            setError('Invalid email or password');
+            throw new Error(result.error);
+          } else if (result?.ok) {
+            router.push('/');
+            router.refresh();
+          } else {
+            setError('An unexpected error occurred');
+            throw new Error('An unexpected error occurred');
+          }
+        } catch (error) {
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('An unexpected error occurred');
+        } finally {
+          setIsLoading(false);
+        }
+      })(),
+      {
+        loading: 'Signing in...',
+        success: 'Signed in successfully!',
+        error: (error) => error.message,
+      },
+    );
   };
 
   return (
@@ -112,11 +122,7 @@ export default function SignIn() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      type="email"
-                      {...field}
-                    />
+                    <Input placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

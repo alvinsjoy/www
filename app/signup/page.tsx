@@ -20,6 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { toast } from 'sonner';
 
 export default function SignUp() {
   const router = useRouter();
@@ -40,48 +41,61 @@ export default function SignUp() {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-        }),
-      });
+    toast.promise(
+      (async () => {
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: data.name,
+              email: data.email,
+              password: data.password,
+              confirmPassword: data.confirmPassword,
+            }),
+          });
 
-      const responseData = await response.json();
+          const responseData = await response.json();
 
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to register');
-      }
-      const signInResult = await signIn('credentials', {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
+          if (!response.ok) {
+            setError(responseData.error || 'Failed to register');
+            throw new Error(responseData.error || 'Failed to register');
+          }
 
-      if (signInResult?.error) {
-        throw new Error(
-          'Registration successful, but auto-login failed. Please sign in manually.',
-        );
-      }
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'An error occurred. Please try again.',
-      );
-      console.error('Sign up error:', err);
-    } finally {
-      setIsLoading(false);
-    }
+          const signInResult = await signIn('credentials', {
+            redirect: false,
+            email: data.email,
+            password: data.password,
+          });
+
+          if (signInResult?.error) {
+            toast.error('Registration successful, but auto-login failed.', {
+              description: 'Please sign in manually.',
+            });
+            throw new Error(
+              'Registration successful, but auto-login failed. Please sign in manually.',
+            );
+          }
+
+          router.push('/dashboard');
+          router.refresh();
+        } catch (error) {
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('An unexpected error occurred');
+        } finally {
+          setIsLoading(false);
+        }
+      })(), // Immediately invoke the async function (IIFE)
+      {
+        loading: 'Creating your account...',
+        success: 'Account created successfully!',
+        error: (error) => error.message,
+      },
+    );
   };
 
   return (
@@ -145,11 +159,7 @@ export default function SignUp() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="name@example.com"
-                      type="email"
-                      {...field}
-                    />
+                    <Input placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
