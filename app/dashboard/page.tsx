@@ -274,7 +274,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 ) : (
-                  <div className="h-[350px] w-full">
+                  <div className="h-fit w-full">
                     <ChartContainer config={chartConfig}>
                       <AreaChart
                         data={processedChartData}
