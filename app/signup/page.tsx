@@ -60,7 +60,7 @@ export default function SignUp() {
           const responseData = await response.json();
 
           if (!response.ok) {
-            setError(responseData.error || 'Failed to register');
+            setError(responseData.message || 'Failed to register');
             throw new Error(responseData.error || 'Failed to register');
           }
 
@@ -79,7 +79,7 @@ export default function SignUp() {
             );
           }
 
-          router.push('/dashboard');
+          router.push('/verify');
           router.refresh();
         } catch (error) {
           if (error instanceof Error) {
