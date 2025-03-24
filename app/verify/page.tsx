@@ -30,9 +30,7 @@ export default function VerifyEmail() {
         if (data.success) {
           setSuccess(true);
           toast.success('Email verified successfully!');
-          setTimeout(() => {
-            router.push('/signin');
-          }, 2000);
+          router.push('/');
         } else {
           toast.error(data.error || 'Failed to verify email');
         }
