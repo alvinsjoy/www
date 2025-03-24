@@ -10,4 +10,8 @@ declare module 'next-auth' {
       emailVerified?: Date | null;
     };
   }
+
+  interface User {
+    emailVerified?: Date | null;
+  }
 }

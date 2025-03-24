@@ -1,18 +1,11 @@
 import { getServerSession } from 'next-auth';
-import type { NextAuthOptions, DefaultSession } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-    } & DefaultSession['user'];
-  }
-}
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const authOptions: NextAuthOptions = {
@@ -75,12 +68,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.emailVerified = user.emailVerified;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
+        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },

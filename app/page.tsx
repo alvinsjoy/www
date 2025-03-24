@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import { useAudioPref } from '@/hooks/use-audio-pref';
 import { CameraFeed } from '@/components/camera-feed';
 import { DetectionOverlay } from '@/components/detection-overlay';
@@ -29,12 +31,29 @@ function areDetectionsEqual(
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const [detections, setDetections] = useState<DetectionResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingTime, setProcessingTime] = useState<number>(0);
   const previousDetections = useRef<DetectionResult[]>([]);
   const [audioEnabled] = useAudioPref();
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      session?.user &&
+      !session.user.emailVerified &&
+      !toastShownRef.current
+    ) {
+      toast.warning('Email not verified', {
+        description:
+          'Detections will not be stored until you verify your email.',
+        duration: 5000,
+      });
+      toastShownRef.current = true;
+    }
+  }, [session]);
 
   const processFrame = useCallback(async (formData: FormData) => {
     try {

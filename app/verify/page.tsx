@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { motion } from 'motion/react';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 
 export default function VerifyEmail() {
   const router = useRouter();
+  const { update } = useSession();
   const searchParams = useSearchParams();
   const [verifying, setVerifying] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -29,8 +31,10 @@ export default function VerifyEmail() {
 
         if (data.success) {
           setSuccess(true);
+          await update();
           toast.success('Email verified successfully!');
           router.push('/');
+          router.refresh();
         } else {
           toast.error(data.error || 'Failed to verify email');
         }
@@ -45,7 +49,7 @@ export default function VerifyEmail() {
     };
 
     verifyToken();
-  }, [router, searchParams]);
+  }, [router, searchParams, update]);
 
   return (
     <main className="container mx-auto flex min-h-screen flex-col items-center justify-center px-3 py-6 md:px-4 md:py-8">
