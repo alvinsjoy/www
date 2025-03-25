@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
 import { useAudioPref } from '@/hooks/use-audio-pref';
 import { CameraFeed } from '@/components/camera-feed';
 import { DetectionOverlay } from '@/components/detection-overlay';
-import ThemeSwitch from '@/components/theme-switch';
-import AudioToggle from '@/components/audio-toggle';
+import NavBar from '@/components/navbar';
 import type { DetectionResult } from '@/types/detection';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
@@ -30,12 +31,29 @@ function areDetectionsEqual(
 }
 
 export default function Home() {
+  const { data: session } = useSession();
   const [detections, setDetections] = useState<DetectionResult[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingTime, setProcessingTime] = useState<number>(0);
   const previousDetections = useRef<DetectionResult[]>([]);
   const [audioEnabled] = useAudioPref();
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      session?.user &&
+      !session.user.emailVerified &&
+      !toastShownRef.current
+    ) {
+      toast.warning('Email not verified', {
+        description:
+          'Detections will not be stored until you verify your email.',
+        duration: 5000,
+      });
+      toastShownRef.current = true;
+    }
+  }, [session]);
 
   const processFrame = useCallback(async (formData: FormData) => {
     try {
@@ -67,20 +85,8 @@ export default function Home() {
       <div className="pointer-events-none absolute top-0 left-1/4 h-[400px] w-1/2 bg-gradient-to-b from-purple-600/30 via-fuchsia-500/15 to-transparent blur-3xl" />
       <div className="pointer-events-none absolute top-0 right-[10%] h-[350px] w-[400px] bg-gradient-to-b from-orange-500/30 via-pink-500/15 to-transparent blur-3xl" />
       <div className="pointer-events-none absolute top-0 left-[10%] h-[350px] w-[400px] bg-gradient-to-b from-blue-600/30 via-indigo-500/15 to-transparent blur-3xl" />
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="relative mb-6 w-full md:mb-8"
-      >
-        <h1 className="from-primary to-accent-foreground bg-gradient-to-r bg-clip-text text-center text-4xl font-bold text-transparent">
-          Traffic Sign Recognition
-        </h1>
-        <div className="absolute top-1 flex w-full justify-between md:top-0">
-          <ThemeSwitch />
-          <AudioToggle />
-        </div>
-      </motion.div>
+
+      <NavBar />
 
       {error && (
         <motion.div
