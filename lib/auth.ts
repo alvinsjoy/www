@@ -84,7 +84,7 @@ export const authOptions: NextAuthOptions = {
 
 export const auth = () => getServerSession(authOptions);
 
-export async function sendVerificationEmail(email: string) {
+export async function sendVerificationEmail(email: string, baseUrl?: string) {
   try {
     const token = crypto.randomUUID();
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -96,8 +96,11 @@ export async function sendVerificationEmail(email: string) {
         expires,
       },
     });
+    if (!baseUrl) {
+      throw new Error('No base URL available for verification email');
+    }
 
-    const verificationUrl = `${process.env.NEXTAUTH_URL}/verify?token=${token}`;
+    const verificationUrl = `${baseUrl}/verify?token=${token}`;
 
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,

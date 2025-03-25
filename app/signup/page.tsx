@@ -40,6 +40,7 @@ export default function SignUp() {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     setError(null);
+    const baseUrl = window.location.origin;
 
     toast.promise(
       (async () => {
@@ -54,6 +55,7 @@ export default function SignUp() {
               email: data.email,
               password: data.password,
               confirmPassword: data.confirmPassword,
+              baseUrl: baseUrl,
             }),
           });
 
