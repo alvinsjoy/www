@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, password } = result.data;
+    const { name, email, password, baseUrl } = body;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -56,7 +56,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const { success, error } = await sendVerificationEmail(email);
+    let verificationBaseUrl = baseUrl;
+    if (!verificationBaseUrl) {
+      const origin = req.headers.get('origin') || req.headers.get('host');
+      const protocol = origin?.includes('localhost') ? 'http://' : 'https://';
+      verificationBaseUrl = origin ? `${protocol}${origin}` : undefined;
+    }
+
+    const { success, error } = await sendVerificationEmail(
+      email,
+      verificationBaseUrl,
+    );
 
     if (!success) {
       return NextResponse.json(
