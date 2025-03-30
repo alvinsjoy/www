@@ -1,0 +1,26 @@
+name: Database Keepalive
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API to keep database alive
+        run: |
+          curl -X GET \
+               -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+               -H "Content-Type: application/json" \
+               https://signalyze.vercel.app/api/ping
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Ping successful"
+          else
+            echo "❌ Ping failed"
+          fi
