@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,15 @@ import { toast } from 'sonner';
 
 export default function SignIn() {
   const router = useRouter();
+  const { status } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),

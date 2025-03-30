@@ -76,10 +76,10 @@ function VerifyEmail() {
 
         if (data.success) {
           setSuccess(true);
-          await update();
           toast.success('Email verified successfully!');
-          router.push('/');
-          router.refresh();
+          update().then(() => {
+            router.push('/');
+          });
         } else {
           toast.error(data.error || 'Failed to verify email');
         }
