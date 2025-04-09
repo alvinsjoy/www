@@ -29,15 +29,9 @@ export async function detectTrafficSigns(formData: FormData) {
       throw new Error('Unexpected API response format');
     }
 
-    // Store detections only for authenticated users with verified emails
+    // Store detections for authenticated users
     const session = await auth();
-    if (
-      session &&
-      session.user &&
-      session.user.id &&
-      session.user.emailVerified &&
-      data.results.length > 0
-    ) {
+    if (session && session.user && session.user.id && data.results.length > 0) {
       await prisma.detection.createMany({
         data: data.results.map((detection: DetectionResult) => ({
           classId: detection.class_id,

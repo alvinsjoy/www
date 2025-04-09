@@ -7,7 +7,7 @@ import { signIn, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'motion/react';
-import { LuCircleAlert } from 'react-icons/lu';
+import { LuCircleAlert, LuEye, LuEyeOff } from 'react-icons/lu';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,8 @@ export default function SignUp() {
   const { status } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -47,7 +49,6 @@ export default function SignUp() {
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     setError(null);
-    const baseUrl = window.location.origin;
 
     toast.promise(
       (async () => {
@@ -62,7 +63,6 @@ export default function SignUp() {
               email: data.email,
               password: data.password,
               confirmPassword: data.confirmPassword,
-              baseUrl: baseUrl,
             }),
           });
 
@@ -73,23 +73,13 @@ export default function SignUp() {
             throw new Error(responseData.error || 'Failed to register');
           }
 
-          const signInResult = await signIn('credentials', {
-            redirect: false,
+          await signIn('email', {
             email: data.email,
-            password: data.password,
+            redirect: false,
+            callbackUrl: '/',
           });
 
-          if (signInResult?.error) {
-            toast.error('Registration successful, but auto-login failed.', {
-              description: 'Please sign in manually.',
-            });
-            throw new Error(
-              'Registration successful, but auto-login failed. Please sign in manually.',
-            );
-          }
-
           router.push('/verify');
-          router.refresh();
         } catch (error) {
           if (error instanceof Error) {
             throw error;
@@ -101,7 +91,8 @@ export default function SignUp() {
       })(), // Immediately invoke the async function (IIFE)
       {
         loading: 'Creating your account...',
-        success: 'Account created successfully!',
+        success:
+          'Account created! Please check your email for verification link.',
         error: (error) => error.message,
       },
     );
@@ -182,7 +173,30 @@ export default function SignUp() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} />
+                    <div className="relative">
+                      <Input
+                        placeholder="••••••••"
+                        type={showPassword ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground absolute top-0 right-0 h-full px-3 py-2"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <LuEye className="h-4 w-4" />
+                        ) : (
+                          <LuEyeOff className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {showPassword ? 'Show password' : 'Hide password'}
+                        </span>
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -196,7 +210,34 @@ export default function SignUp() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} />
+                    <div className="relative">
+                      <Input
+                        placeholder="••••••••"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground absolute top-0 right-0 h-full px-3 py-2"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? (
+                          <LuEye className="h-4 w-4" />
+                        ) : (
+                          <LuEyeOff className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {showConfirmPassword
+                            ? 'Show password'
+                            : 'Hide password'}
+                        </span>
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
