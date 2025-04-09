@@ -194,15 +194,11 @@ export default function SignIn() {
         </div>
       </motion.div>
 
-      <div className="mt-4">
-        <Button
-          variant="ghost"
-          onClick={() => router.push('/')}
-          className="text-muted-foreground text-sm"
-        >
+      <Link href="/" className="mt-4">
+        <Button variant="ghost" className="text-muted-foreground text-sm">
           Back to Home
         </Button>
-      </div>
+      </Link>
     </main>
   );
 }
