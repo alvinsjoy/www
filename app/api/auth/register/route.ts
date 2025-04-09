@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signUpSchema } from '@/lib/validations/auth';
-import { sendVerificationEmail } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, password, baseUrl } = body;
+    const { name, email, password } = body;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -56,34 +55,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    let verificationBaseUrl = baseUrl;
-    if (!verificationBaseUrl) {
-      const origin = req.headers.get('origin') || req.headers.get('host');
-      const protocol = origin?.includes('localhost') ? 'http://' : 'https://';
-      verificationBaseUrl = origin ? `${protocol}${origin}` : undefined;
-    }
-
-    const { success, error } = await sendVerificationEmail(
-      email,
-      verificationBaseUrl,
-    );
-
-    if (!success) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Failed to send verification email',
-          error: error,
-        },
-        { status: 500 },
-      );
-    }
-
     return NextResponse.json(
       {
         success: true,
-        message:
-          'User registered successfully. Please check your email to verify your account.',
+        message: 'User registered successfully.',
         data: { user },
       },
       { status: 201 },

@@ -3,10 +3,9 @@ import type { NextAuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import EmailProvider from 'next-auth/providers/email';
 import bcrypt from 'bcryptjs';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from 'nodemailer';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -19,6 +18,41 @@ export const authOptions: NextAuthOptions = {
   },
   debug: process.env.NODE_ENV === 'development',
   providers: [
+    EmailProvider({
+      server: {
+        host: 'smtp.resend.com',
+        port: 465,
+        auth: {
+          user: 'resend',
+          pass: process.env.RESEND_API_KEY,
+        },
+        secure: true,
+      },
+      from: process.env.EMAIL_FROM,
+      async sendVerificationRequest({
+        identifier: email,
+        url,
+        provider: { server, from },
+      }) {
+        const transport = nodemailer.createTransport(server);
+
+        await transport.sendMail({
+          to: email,
+          from,
+          subject: `Verify your email for Signalyze`,
+          text: `Please verify your email address for Signalyze by clicking this link: ${url}`,
+          html: `
+            <body>
+              <h1>Verify your email address</h1>
+              <p>Thank you for registering! Please click the link below to verify your email address:</p>
+              <a href="${url}">Verify Email</a>
+              <p>You won't be able to sign in until your email is verified.</p>
+              <p>If you didn't request this email, you can safely ignore it.</p>
+            </body>
+          `,
+        });
+      },
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -49,6 +83,9 @@ export const authOptions: NextAuthOptions = {
           if (!passwordMatch) {
             return null;
           }
+          if (!user.emailVerified) {
+            return Promise.reject(new Error('UNVERIFIED_EMAIL'));
+          }
 
           return {
             id: user.id,
@@ -68,14 +105,12 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.emailVerified = user.emailVerified;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },
@@ -83,76 +118,3 @@ export const authOptions: NextAuthOptions = {
 };
 
 export const auth = () => getServerSession(authOptions);
-
-export async function sendVerificationEmail(email: string, baseUrl?: string) {
-  try {
-    const token = crypto.randomUUID();
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    await prisma.verificationToken.create({
-      data: {
-        identifier: email,
-        token,
-        expires,
-      },
-    });
-    if (!baseUrl) {
-      throw new Error('No base URL available for verification email');
-    }
-
-    const verificationUrl = `${baseUrl}/verify?token=${token}`;
-
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
-      to: email,
-      subject: 'Verify your email address',
-      html: `
-        <body>
-          <h1>Verify your email address</h1>
-          <p>Click the link below to verify your email address:</p>
-          <a href="${verificationUrl}">Verify Email Address</a>
-          <p>This link will expire in 24 hours.</p>
-          <p>If you didn't request this email, you can safely ignore it.</p>
-        </body>
-      `,
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error sending verification email:', error);
-    return { success: false, error: 'Failed to send verification email' };
-  }
-}
-
-export async function verifyEmail(token: string) {
-  try {
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
-    });
-
-    if (!verificationToken) {
-      return { success: false, error: 'Invalid token' };
-    }
-
-    if (verificationToken.expires < new Date()) {
-      await prisma.verificationToken.delete({
-        where: { token },
-      });
-      return { success: false, error: 'Token expired' };
-    }
-
-    await prisma.user.update({
-      where: { email: verificationToken.identifier },
-      data: { emailVerified: new Date() },
-    });
-
-    await prisma.verificationToken.delete({
-      where: { token },
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error verifying email:', error);
-    return { success: false, error: 'Failed to verify email' };
-  }
-}

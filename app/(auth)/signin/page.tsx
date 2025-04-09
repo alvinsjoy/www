@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'motion/react';
-import { LuCircleAlert } from 'react-icons/lu';
+import { LuCircleAlert, LuEye, LuEyeOff } from 'react-icons/lu';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,7 @@ export default function SignIn() {
   const { status } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -46,40 +47,46 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
 
-    toast.promise(
-      (async () => {
-        try {
-          const result = await signIn('credentials', {
-            redirect: false,
-            email: data.email,
-            password: data.password,
-          });
+    const toastId = toast.loading('Signing in...');
 
-          if (result?.error) {
-            setError('Invalid email or password');
-            throw new Error(result.error);
-          } else if (result?.ok) {
-            router.push('/');
-            router.refresh();
-          } else {
-            setError('An unexpected error occurred');
-            throw new Error('An unexpected error occurred');
-          }
-        } catch (error) {
-          if (error instanceof Error) {
-            throw error;
-          }
-          throw new Error('An unexpected error occurred');
-        } finally {
-          setIsLoading(false);
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (result?.error) {
+        if (result.error === 'UNVERIFIED_EMAIL') {
+          setError('Your email is not verified');
+          toast.error('Email verification required', {
+            id: toastId,
+            description: 'Please verify your email before signing in',
+            action: {
+              label: 'Verify email',
+              onClick: () => router.push('/verify'),
+            },
+            duration: 8000,
+          });
+        } else {
+          toast.error('Invalid email or password', { id: toastId });
+          setError('Invalid email or password');
         }
-      })(),
-      {
-        loading: 'Signing in...',
-        success: 'Signed in successfully!',
-        error: (error) => error.message,
-      },
-    );
+      } else if (result?.ok) {
+        toast.success('Signed in successfully!', { id: toastId });
+        router.push('/');
+        router.refresh();
+      } else {
+        toast.error('An unexpected error occurred', { id: toastId });
+        setError('An unexpected error occurred');
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      toast.error('An unexpected error occurred', { id: toastId });
+      setError('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -143,7 +150,30 @@ export default function SignIn() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="••••••••" type="password" {...field} />
+                    <div className="relative">
+                      <Input
+                        placeholder="••••••••"
+                        type={showPassword ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground absolute top-0 right-0 h-full px-3 py-2"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <LuEye className="h-4 w-4" />
+                        ) : (
+                          <LuEyeOff className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {showPassword ? 'Show password' : 'Hide password'}
+                        </span>
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
