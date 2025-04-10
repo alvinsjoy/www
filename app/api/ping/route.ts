@@ -10,14 +10,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    await prisma.user.findFirst({
-      select: { id: true },
+    const firstDetection = await prisma.detection.findFirst({
+      select: {
+        classId: true,
+        className: true,
+      },
       take: 1,
     });
 
     return NextResponse.json({
       message: 'Ping successful',
       timestamp: new Date().toISOString(),
+      data: firstDetection || null,
     });
   } catch (error: unknown) {
     console.error('Ping error:', error);
