@@ -15,12 +15,9 @@ jobs:
                -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
                -H "Content-Type: application/json" \
                https://signalyze.vercel.app/api/ping
-
-      - name: Report status
-        if: always()
-        run: |
           if [ $? -eq 0 ]; then
             echo "✅ Ping successful"
           else
             echo "❌ Ping failed"
+            exit 1
           fi
