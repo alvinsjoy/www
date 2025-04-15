@@ -57,17 +57,53 @@ export async function GET(req: NextRequest) {
       monthlyStats[month][classId] += detection.count;
     });
 
-    // Format data for the chart - using class IDs as keys
-    const chartData = Object.entries(monthlyStats).map(([month, stats]) => {
-      const monthData: Record<string, string | number> = { month };
+    // Get the last 6 months for our chart views
+    const now = new Date();
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date(now);
+      date.setMonth(date.getMonth() - i);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }).reverse();
 
-      // Add each sign class as a property using classId
-      signClassIds.forEach((classId) => {
-        // Use classId as the key
-        monthData[`class-${classId}`] = stats[classId] || 0;
-      });
+    const areaChartData = last6Months.map((month) => {
+      const monthStats = monthlyStats[month] || {};
+      const totalCount = Object.values(monthStats).reduce(
+        (sum, count) => sum + count,
+        0,
+      );
 
-      return monthData;
+      return {
+        month,
+        formattedMonth: formatMonth(month),
+        totalCount,
+      };
+    });
+
+    // Format data for radial charts (top 5 sign types per month)
+    const radialChartData = last6Months.map((month) => {
+      const monthStats = monthlyStats[month] || {};
+
+      const topSigns = Object.entries(monthStats)
+        .map(([classIdStr, count]) => {
+          const classId = Number(classIdStr);
+          return {
+            name: classMap[classId] || `Sign ${classId}`, // Use className as the display name
+            classId,
+            count: count as number,
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Calculate total for percentage
+      const monthTotal = topSigns.reduce((sum, item) => sum + item.count, 0);
+
+      return {
+        month,
+        formattedMonth: formatMonth(month),
+        data: topSigns,
+        total: monthTotal,
+      };
     });
 
     const totalStats = Array.from(signClassIds)
@@ -87,10 +123,11 @@ export async function GET(req: NextRequest) {
     const classIdsArray = Array.from(signClassIds);
 
     return NextResponse.json({
-      chartData,
+      areaChartData,
       totalStats,
       classIds: classIdsArray,
       classMap,
+      radialChartData,
     });
   } catch (error) {
     console.error('Stats error:', error);
@@ -99,4 +136,14 @@ export async function GET(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+// Helper function to format month for display (e.g., "2023-06" to "Jun 23")
+function formatMonth(monthStr: string): string {
+  const [year, month] = monthStr.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1);
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    year: '2-digit',
+  });
 }
