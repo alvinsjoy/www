@@ -11,20 +11,28 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LuCircleAlert } from 'react-icons/lu';
 import NavBar from '@/components/navbar';
 import Link from 'next/link';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  RadialBar,
+  RadialBarChart,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from '@/components/ui/chart';
 
 interface DetectionStat {
@@ -33,28 +41,69 @@ interface DetectionStat {
   count: number;
 }
 
-interface ChartDataPoint {
+interface AreaChartDataPoint {
   month: string;
-  formattedMonth?: string;
-  [key: string]: string | number | undefined;
+  formattedMonth: string;
+  totalCount: number;
+}
+
+interface RadialChartItem {
+  name: string;
+  classId: number;
+  count: number;
+  fill: string;
+}
+
+interface MonthlyRadialChartData {
+  month: string;
+  formattedMonth: string;
+  data: RadialChartItem[];
+  total: number;
 }
 
 interface StatsResponse {
-  chartData: ChartDataPoint[];
+  areaChartData: AreaChartDataPoint[];
   totalStats: DetectionStat[];
   classIds: number[];
   classMap: Record<number, string>;
+  radialChartData: MonthlyRadialChartData[];
 }
 
-// Function to format month for display (e.g., "2023-06" to "Jun 23")
-function formatMonth(monthStr: string): string {
-  const [year, month] = monthStr.split('-');
-  const date = new Date(parseInt(year), parseInt(month) - 1);
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
-    year: '2-digit',
-  });
-}
+const CustomRadialTooltip = ({
+  active,
+  payload,
+  monthTotal,
+}: {
+  active?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[];
+  monthTotal: number;
+}) => {
+  if (!active || !payload || payload.length === 0) {
+    return null;
+  }
+
+  const data = payload[0];
+  const signName = data.payload?.name || data.name || 'Unknown';
+  const count = data.value || 0;
+  const percentage = Math.round((count / monthTotal) * 100);
+  const fillColor = data.payload?.fill || 'currentColor';
+
+  return (
+    <div className="bg-card rounded-md border p-2 text-sm shadow-sm">
+      <div className="mb-1 font-medium">{signName}</div>
+      <div className="flex items-center gap-1.5">
+        <div
+          className="h-2 w-2 shrink-0 rounded-[2px]"
+          style={{ backgroundColor: fillColor }}
+        />
+        <span className="text-muted-foreground text-xs">
+          {count} detections ({percentage}%)
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export default function Dashboard() {
   const { status } = useSession();
@@ -93,40 +142,24 @@ export default function Dashboard() {
     }
   };
 
-  // Chart configuration - dynamically create colors for each sign class using classIds
   const chartConfig: ChartConfig = useMemo(() => {
     if (!statsData?.classIds) return {};
 
-    const chartVars = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
+    const config: ChartConfig = {
+      count: {
+        label: 'Count',
+      },
+      totalCount: {
+        label: 'Total Detections',
+      },
+    };
 
-    return statsData.classIds.reduce((config, classId, index) => {
-      // Use modulo to cycle through the available chart colors
-      const colorVar = chartVars[index % chartVars.length];
-      const className = statsData.classMap[classId];
-      const classKey = `class-${classId}`;
-
-      return {
-        ...config,
-        [classKey]: {
-          label: className, // Use className for display
-          color: `hsl(var(--${colorVar}))`,
-        },
-      };
-    }, {});
-  }, [statsData?.classIds, statsData?.classMap]);
-
-  const processedChartData = useMemo(() => {
-    if (!statsData?.chartData) return [];
-
-    return statsData.chartData.map((dataPoint) => ({
-      ...dataPoint,
-      formattedMonth: formatMonth(dataPoint.month),
-    }));
-  }, [statsData?.chartData]);
+    return config;
+  }, [statsData?.classIds]);
 
   if (status === 'loading') {
     return (
-      <main className="container mx-auto flex min-h-screen flex-col items-center justify-center">
+      <main className="conainer mx-auto flex min-h-screen flex-col items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-medium">Loading...</h2>
         </div>
@@ -255,19 +288,18 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="chart" className="mt-4">
+          <TabsContent value="chart" className="mt-4 space-y-6">
+            {/* Area Chart for Total Detections */}
             <Card className="flex flex-col">
               <CardHeader>
-                <CardTitle>Detection Trends</CardTitle>
-                <CardDescription>
-                  Monthly detection count by traffic sign type
-                </CardDescription>
+                <CardTitle>Total Detection Trends</CardTitle>
+                <CardDescription>Monthly total detection count</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 {loading ? (
                   <div className="py-8 text-center">Loading chart data...</div>
-                ) : !statsData?.chartData ||
-                  statsData.chartData.length === 0 ? (
+                ) : !statsData?.areaChartData ||
+                  statsData.areaChartData.length === 0 ? (
                   <div className="py-8 text-center">
                     <p className="text-muted-foreground">
                       No data available for chart
@@ -277,12 +309,12 @@ export default function Dashboard() {
                   <div className="h-fit w-full">
                     <ChartContainer config={chartConfig}>
                       <AreaChart
-                        data={processedChartData}
+                        data={statsData.areaChartData}
                         margin={{
-                          top: 5,
-                          right: 20,
+                          top: 10,
+                          right: 30,
                           left: 0,
-                          bottom: 5,
+                          bottom: 0,
                         }}
                       >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -292,109 +324,145 @@ export default function Dashboard() {
                           axisLine={false}
                         />
                         <YAxis />
-                        <ChartTooltip
+                        <Tooltip
                           content={(tooltipProps) => {
                             const { active, payload, label } = tooltipProps;
-
-                            // Transform payload to show class names instead of IDs
-                            const transformedPayload = payload?.map((item) => {
-                              const dataKey = item.dataKey as string;
-                              // Extract classId from the dataKey format "class-{id}"
-                              const classId = parseInt(
-                                dataKey.replace('class-', ''),
-                              );
-                              const className = statsData?.classMap[classId];
-
-                              return {
-                                ...item,
-                                name: className,
-                              };
-                            });
-
                             return (
                               <ChartTooltipContent
                                 active={active}
-                                payload={transformedPayload}
+                                payload={payload?.map((item) => ({
+                                  ...item,
+                                  name: 'Detections',
+                                }))}
                                 label={label}
                               />
                             );
                           }}
                         />
-                        <ChartLegend
-                          content={(props) => {
-                            const { payload, verticalAlign } = props;
 
-                            // Transform payload to show class names instead of IDs
-                            const transformedPayload = payload?.map((item) => {
-                              const dataKey = item.dataKey as string;
-                              // Extract classId from the dataKey format "class-{id}"
-                              const classId = parseInt(
-                                dataKey.replace('class-', ''),
-                              );
-                              const className = statsData?.classMap[classId];
-
-                              return {
-                                ...item,
-                                value: className,
-                              };
-                            });
-
-                            return (
-                              <ChartLegendContent
-                                payload={transformedPayload}
-                                verticalAlign={verticalAlign}
-                              />
-                            );
-                          }}
-                        />
-
-                        {/* Gradients */}
+                        {/* Gradient for the area */}
                         <defs>
-                          {statsData.classIds.map((classId) => {
-                            const classKey = `class-${classId}`;
-                            return (
-                              <linearGradient
-                                key={`gradient-${classId}`}
-                                id={`color-${classId}`}
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor={chartConfig[classKey]?.color}
-                                  stopOpacity={0.8}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor={chartConfig[classKey]?.color}
-                                  stopOpacity={0.1}
-                                />
-                              </linearGradient>
-                            );
-                          })}
+                          <linearGradient
+                            id="colorTotal"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="hsl(var(--chart-6))"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="hsl(var(--chart-6))"
+                              stopOpacity={0.1}
+                            />
+                          </linearGradient>
                         </defs>
 
-                        {statsData.classIds.map((classId) => {
-                          const classKey = `class-${classId}`;
-                          return (
-                            <Area
-                              key={classId}
-                              type="monotone"
-                              dataKey={classKey}
-                              name={statsData.classMap[classId]}
-                              stroke={chartConfig[classKey]?.color}
-                              fill={`url(#color-${classId})`}
-                            />
-                          );
-                        })}
+                        <Area
+                          type="monotone"
+                          dataKey="totalCount"
+                          name="Total Detections"
+                          stroke="hsl(var(--chart-6))"
+                          fill="url(#colorTotal)"
+                        />
                       </AreaChart>
                     </ChartContainer>
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Monthly Radial Charts */}
+            <div className="mt-6">
+              <h3 className="text-muted-foreground mb-4 text-center text-lg">
+                Monthly Detection Distribution
+              </h3>
+
+              {loading ? (
+                <div className="py-8 text-center">Loading chart data...</div>
+              ) : !statsData?.radialChartData ||
+                statsData.radialChartData.every(
+                  (month) => month.total === 0,
+                ) ? (
+                <div className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    No monthly data available for charts
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {statsData.radialChartData.map((monthData) => (
+                    <Card key={monthData.month} className="flex flex-col">
+                      <CardHeader className="items-center pb-2">
+                        <CardTitle className="text-lg">
+                          {monthData.formattedMonth}
+                        </CardTitle>
+                        <CardDescription>
+                          Showing {monthData.data.length} top signs
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1 pb-0">
+                        {monthData.total === 0 ? (
+                          <div className="text-muted-foreground py-4 text-center text-sm">
+                            No detections this month
+                          </div>
+                        ) : (
+                          <ChartContainer
+                            config={chartConfig}
+                            className="mx-auto aspect-square max-h-[250px]"
+                          >
+                            <RadialBarChart
+                              data={monthData.data.map((item, index) => ({
+                                ...item,
+                                fill: `hsl(var(--chart-${(index % 6) + 1}))`,
+                              }))}
+                              innerRadius="30%"
+                              outerRadius="90%"
+                              barSize={10}
+                              startAngle={180}
+                              endAngle={0}
+                            >
+                              <Tooltip
+                                cursor={false}
+                                content={(props) => (
+                                  <CustomRadialTooltip
+                                    {...props}
+                                    monthTotal={monthData.total}
+                                  />
+                                )}
+                              />
+                              <RadialBar
+                                dataKey="count"
+                                background
+                                fillOpacity={0.85}
+                              />
+                              <Legend
+                                iconSize={10}
+                                layout="horizontal"
+                                verticalAlign="bottom"
+                                wrapperStyle={{
+                                  fontSize: '10px',
+                                  paddingTop: '10px',
+                                }}
+                              />
+                            </RadialBarChart>
+                          </ChartContainer>
+                        )}
+                      </CardContent>
+                      <CardFooter className="flex-col gap-1 py-3 text-sm">
+                        <div className="text-muted-foreground leading-none">
+                          {monthData.total} total signs
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </motion.div>
