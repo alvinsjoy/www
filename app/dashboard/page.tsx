@@ -431,7 +431,7 @@ export default function Dashboard() {
                                   }))
                             }
                             innerRadius="30%"
-                            outerRadius="100%"
+                            outerRadius="110%"
                             barSize={10}
                             startAngle={180}
                             endAngle={0}
