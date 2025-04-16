@@ -86,19 +86,23 @@ const CustomRadialTooltip = ({
   const data = payload[0];
   const signName = data.payload?.name || data.name || 'Unknown';
   const count = data.value || 0;
-  const percentage = Math.round((count / monthTotal) * 100);
+  const percentage =
+    monthTotal === 0 ? 0 : Math.round((count / monthTotal) * 100);
   const fillColor = data.payload?.fill || 'currentColor';
 
   return (
-    <div className="bg-card rounded-md border p-2 text-sm shadow-sm">
-      <div className="mb-1 font-medium">{signName}</div>
-      <div className="flex items-center gap-1.5">
+    <div className="border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+      <div className="flex items-center gap-2">
         <div
-          className="h-2 w-2 shrink-0 rounded-[2px]"
+          className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
           style={{ backgroundColor: fillColor }}
         />
-        <span className="text-muted-foreground text-xs">
-          {count} detections ({percentage}%)
+        <div className="font-medium">{signName}</div>
+      </div>
+      <div className="mt-0.5 flex items-center justify-between">
+        <span className="text-muted-foreground">Detections</span>
+        <span className="text-foreground pl-3 font-mono font-medium tabular-nums">
+          {count} ({percentage}%)
         </span>
       </div>
     </div>
@@ -406,26 +410,33 @@ export default function Dashboard() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="flex-1 pb-0">
-                        {monthData.total === 0 ? (
-                          <div className="text-muted-foreground py-4 text-center text-sm">
-                            No detections this month
-                          </div>
-                        ) : (
-                          <ChartContainer
-                            config={chartConfig}
-                            className="mx-auto aspect-square max-h-[250px]"
+                        <ChartContainer
+                          config={chartConfig}
+                          className="mx-auto aspect-square max-h-[250px]"
+                        >
+                          <RadialBarChart
+                            data={
+                              monthData.total === 0
+                                ? [
+                                    {
+                                      name: 'No Data',
+                                      count: 0,
+                                      classId: -1,
+                                      fill: 'hsl(var(--muted))',
+                                    },
+                                  ]
+                                : monthData.data.map((item, index) => ({
+                                    ...item,
+                                    fill: `hsl(var(--chart-${(index % 6) + 1}))`,
+                                  }))
+                            }
+                            innerRadius="30%"
+                            outerRadius="100%"
+                            barSize={10}
+                            startAngle={180}
+                            endAngle={0}
                           >
-                            <RadialBarChart
-                              data={monthData.data.map((item, index) => ({
-                                ...item,
-                                fill: `hsl(var(--chart-${(index % 6) + 1}))`,
-                              }))}
-                              innerRadius="30%"
-                              outerRadius="90%"
-                              barSize={10}
-                              startAngle={180}
-                              endAngle={0}
-                            >
+                            {monthData.total > 0 && (
                               <Tooltip
                                 cursor={false}
                                 content={(props) => (
@@ -435,27 +446,40 @@ export default function Dashboard() {
                                   />
                                 )}
                               />
-                              <RadialBar
-                                dataKey="count"
-                                background
-                                fillOpacity={0.85}
-                              />
-                              <Legend
-                                iconSize={10}
-                                layout="horizontal"
-                                verticalAlign="bottom"
-                                wrapperStyle={{
-                                  fontSize: '10px',
-                                  paddingTop: '10px',
-                                }}
-                              />
-                            </RadialBarChart>
-                          </ChartContainer>
-                        )}
+                            )}
+                            <RadialBar
+                              dataKey="count"
+                              background
+                              fillOpacity={0.85}
+                            />
+                            <Legend
+                              iconSize={10}
+                              layout="vertical"
+                              verticalAlign="bottom"
+                              wrapperStyle={{
+                                fontSize: '10px',
+                                paddingTop: '10px',
+                              }}
+                            />
+
+                            {monthData.total === 0 && (
+                              <text
+                                x="50%"
+                                y="50%"
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                className="fill-muted-foreground text-xs"
+                              >
+                                No detections
+                              </text>
+                            )}
+                          </RadialBarChart>
+                        </ChartContainer>
                       </CardContent>
                       <CardFooter className="flex-col gap-1 py-3 text-sm">
                         <div className="text-muted-foreground leading-none">
-                          {monthData.total} total signs
+                          {monthData.total} detections in{' '}
+                          {monthData.formattedMonth}
                         </div>
                       </CardFooter>
                     </Card>
